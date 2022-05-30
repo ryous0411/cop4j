@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
 import org.cop4j.Period.MonthlyPeriod;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,13 +20,11 @@ class PeriodTest {
 
   @ParameterizedTest
   @MethodSource("successPeriodsTestDataProvider")
-  void successCalculateOfPeriod(LocalDate from, LocalDate to,
-      long numberOfMonths, List<MonthlyPeriod> periodsTestData) {
+  void successCalculateOfPeriod(LocalDate from, Integer numberOfMonths, List<MonthlyPeriod> periodsTestData) {
 
-    var period = new Period(from, to);
+    var period = new Period(from, numberOfMonths);
 
     assertThat(period.getFrom()).isEqualTo(from);
-    assertThat(period.getTo()).isEqualTo(to);
     assertThat(period.getNumberOfMonths()).isEqualTo(numberOfMonths);
 
     var monthlyPeriods = period.getMonthlyPeriods();
@@ -38,23 +37,23 @@ class PeriodTest {
     }
   }
 
-  @ParameterizedTest
-  @MethodSource("failurePeriodsTestDataProvider")
-  void failureCalculateOfPeriod(LocalDate from, LocalDate to) {
+  @Test
+  void failureCalculateOfPeriod() {
 
-    assertThrows(IllegalArgumentException.class, () -> new Period(from, to));
+    var from = toLocalDate("2020-02-28");
+    assertThrows(IllegalArgumentException.class, () -> new Period(from, null));
   }
 
   static Stream<Arguments> successPeriodsTestDataProvider() {
 
     return Stream.of(
-        arguments("2020-02-01", "2021-04-30", beginningOfTheMonth().size(), beginningOfTheMonth()),
-        arguments("2020-01-15", "2022-01-14", dayOfTheMonth().size(), dayOfTheMonth()),
-        arguments("2021-02-28", "2025-02-27", endOfTheMonth28().size(), endOfTheMonth28()),
-        arguments("2020-02-29", "2025-02-28", endOfTheMonth29().size(), endOfTheMonth29()),
-        arguments("2020-04-30", "2021-04-29", endOfTheMonth30().size(), endOfTheMonth30()),
-        arguments("2021-07-31", "2022-11-30", endOfTheMonth31().size(), endOfTheMonth31()),
-        arguments("2021-01-30", "2022-01-29", beforeTheEndOfTheMonth().size(),
+        arguments("2020-02-01", beginningOfTheMonth().size(), beginningOfTheMonth()),
+        arguments("2020-01-15", dayOfTheMonth().size(), dayOfTheMonth()),
+        arguments("2021-02-28", endOfTheMonth28().size(), endOfTheMonth28()),
+        arguments("2020-02-29", endOfTheMonth29().size(), endOfTheMonth29()),
+        arguments("2020-04-30", endOfTheMonth30().size(), endOfTheMonth30()),
+        arguments("2021-07-31", endOfTheMonth31().size(), endOfTheMonth31()),
+        arguments("2021-01-30", beforeTheEndOfTheMonth().size(),
             beforeTheEndOfTheMonth())
     );
   }
@@ -285,19 +284,6 @@ class PeriodTest {
         new MonthlyPeriod(10, toLocalDate("2021-10-30"), toLocalDate("2021-11-29")),
         new MonthlyPeriod(11, toLocalDate("2021-11-30"), toLocalDate("2021-12-29")),
         new MonthlyPeriod(12, toLocalDate("2021-12-30"), toLocalDate("2022-01-29"))
-    );
-  }
-
-  static Stream<Arguments> failurePeriodsTestDataProvider() {
-
-    return Stream.of(
-        arguments(null, toLocalDate("2025-02-28")),
-        arguments(toLocalDate("2020-02-28"), null),
-        arguments(toLocalDate("2020-02-28"), toLocalDate("2025-02-28")),
-        arguments(toLocalDate("2021-11-29"), toLocalDate("2025-11-29")),
-        arguments(toLocalDate("2021-11-30"), toLocalDate("2025-11-30")),
-        arguments(toLocalDate("2021-11-14"), toLocalDate("2025-11-15")),
-        arguments(toLocalDate("2021-01-01"), toLocalDate("2025-11-29"))
     );
   }
 
